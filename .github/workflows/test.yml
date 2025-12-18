@@ -21,13 +21,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - userName: q215613905
-            repoName: TVBoxOS
+          - userName: dylan8888
+            repoName: TVBox-taka
             branchName: main
-          - userName: takagen99
-            repoName: Box
-            branchName: main
-            java_ver: 17
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,13 +45,13 @@ jobs:
       - name: Checkout Source Code
         if: ${{ env.commit }}
         run: |
-          git clone ${{ env.upStream }} TVBoxOSC
-          cd TVBoxOSC
+          git clone ${{ env.upStream }} TVBox-taka
+          cd TVBox-taka
           git checkout ${{ env.commit }}
           echo "tag=$(git log --date=format:'%Y%m%d-%H%M' --pretty=format:%cd ${{ env.commitS }} -1)" >> $GITHUB_ENV
       - name: Extra Modify
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: TVBox-taka
         run: |
           echo '修改VersionName'
           if [ "${{ matrix.userName }}" == "takagen99" ]; then
@@ -75,7 +71,7 @@ jobs:
           fi
       - name: Compress Source Code
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: TVBox-taka
         run: |
           #zip -q -x ".git/*" -x  ".github/*" -r sourceCode-${{ env.commitS }}.zip .
           tar -cJf sourceCode-${{ env.commitS }}.tar.xz --exclude=.git --exclude=.github *
@@ -94,7 +90,7 @@ jobs:
 
       - name: Modify pyramid——build.gradle
         #if: ${{ matrix.userName == 'q215613905' && env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: TVBox-taka
         run: |
           # 替换Windows路径为系统Python路径
           # sed -i "s|buildPython(\"D:/Programs/Python/Python38/python.exe\")|buildPython(\"/usr/bin/python3\")|g" pyramid/build.gradle
@@ -102,12 +98,12 @@ jobs:
 
       - name: Setup Python local.properties
         #if: ${{ matrix.userName == 'q215613905' && env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: TVBox-taka
         run: echo "" > local.properties 
           
       - name: Release Apk Sign
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: TVBox-taka
         run: |
           signingConfigs='ICAgIHNpZ25pbmdDb25maWdzIHtcCiAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICBteUNvbmZpZyB7XAogICAgICAgICAgICAgICAgc3RvcmVGaWxlIGZpbGUoUkVMRUFTRV9TVE9SRV9GSUxFKVwKICAgICAgICAgICAgICAgIHN0b3JlUGFzc3dvcmQgUkVMRUFTRV9TVE9SRV9QQVNTV09SRFwKICAgICAgICAgICAgICAgIGtleUFsaWFzIFJFTEVBU0VfS0VZX0FMSUFTXAogICAgICAgICAgICAgICAga2V5UGFzc3dvcmQgUkVMRUFTRV9LRVlfUEFTU1dPUkRcCiAgICAgICAgICAgICAgICB2MVNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICB2MlNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICBlbmFibGVWM1NpZ25pbmcgPSB0cnVlXAogICAgICAgICAgICAgICAgZW5hYmxlVjRTaWduaW5nID0gdHJ1ZVwKICAgICAgICAgICAgfVwKICAgICAgICB9XAogICAgfVwKXA=='
           signingConfig='ICAgICAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICAgICAgc2lnbmluZ0NvbmZpZyBzaWduaW5nQ29uZmlncy5teUNvbmZpZ1wKICAgICAgICAgICAgfVwK'
@@ -128,13 +124,13 @@ jobs:
         if: ${{ env.commit }}
       - name: Build With Gradle
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: TVBox-taka
         run: |
           chmod +x gradlew
           ./gradlew assemblerelease --build-cache --parallel --daemon --warning-mode all
       - name: Prepare App
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: TVBox-taka
         run: |
           rm -rf apk/
           mkdir -p apk/
@@ -153,7 +149,7 @@ jobs:
           mv sourceCode-${{ env.commitS }}.* apk/
       - name: Release Note
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: TVBox-taka
         run: |
           lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
           export LESSCHARSET=utf-8
@@ -170,7 +166,7 @@ jobs:
         with:
           name: ${{ matrix.userName }}-${{ matrix.repoName }}
           path: |
-            TVBoxOSC/apk/*
+            TVBox-taka/apk/*
       - name: Whether Or Not to Publish
         if: ${{ inputs.donotpublish && env.commit }}
         run: |
@@ -181,21 +177,21 @@ jobs:
         with:
           name: ${{ env.tag }}
           tag: ${{ env.tag }}
-          bodyFile: TVBoxOSC/apk/${{ matrix.userName }}-Release.log
+          bodyFile: TVBox-taka/apk/${{ matrix.userName }}-Release.log
           allowUpdates: true
           removeArtifacts: true
           artifacts: |
-            TVBoxOSC/apk/*.apk
-            TVBoxOSC/apk/sourceCode-${{ env.commitS }}.*
+            TVBox-taka/apk/*.apk
+            TVBox-taka/apk/sourceCode-${{ env.commitS }}.*
       - name: Download Telegram Bot API Binary
         if: ${{ env.commit }}
         uses: actions/download-artifact@v4
         with:
           name: telegram-bot-api-binary
-          path: TVBoxOSC
+          path: TVBox-taka
       - name: Post To Telegram
         if: ${{ env.commit }}
-        working-directory: TVBoxOSC
+        working-directory: TVBox-taka
         env:
           CHAT_ID: -1001734684817
           TELEGRAM_TOKEN: ${{ secrets.BOT_TOKEN }}
@@ -211,7 +207,7 @@ jobs:
       - name: Push to master
         if: ${{ env.commit }}
         run: |
-          rm -rf TVBoxOSC
+          rm -rf TVBox-taka
           git reset --hard
           sed -i '/url =/d' ./.git/config
           git config --local user.name "github-actions[bot]"
