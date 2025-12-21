@@ -1,4 +1,4 @@
-name: Build
+name: build_tvbox_fongmi
 
 on:
   workflow_dispatch:
