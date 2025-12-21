@@ -25,8 +25,8 @@ jobs:
 
     env:
       # Build configuration
-      SOURCE_REPO: "dylan8888/TV"
-      SOURCE_BRANCH: "customization"
+      SOURCE_REPO: "FongMi/TV"
+      SOURCE_BRANCH: "release"
       API_RETRY_COUNT: 3
       API_RETRY_DELAY: 5
 
